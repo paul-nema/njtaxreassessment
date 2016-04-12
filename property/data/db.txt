@@ -1,0 +1,923 @@
+USE property;
+
+DROP TABLE IF EXISTS building_description;
+
+CREATE TABLE IF NOT EXISTS building_description (
+  cd  VARCHAR(2),
+  category  VARCHAR(10),
+  description  VARCHAR(20)
+);
+
+INSERT INTO building_description VALUES ("S", "STORIES", "Stories");
+INSERT INTO building_description VALUES ("AL", "STRUCTURE", "Aluminum siding");
+INSERT INTO building_description VALUES ("B", "STRUCTURE", "Brick");
+INSERT INTO building_description VALUES ("CB", "STRUCTURE", "Concrete Block");
+INSERT INTO building_description VALUES ("S", "STRUCTURE", "Stucco");
+INSERT INTO building_description VALUES ("SS", "STRUCTURE", "Structured Steel");
+INSERT INTO building_description VALUES ("F", "STRUCTURE", "Frame");
+INSERT INTO building_description VALUES ("ST", "STRUCTURE", "Stone");
+INSERT INTO building_description VALUES ("M", "STRUCTURE", "Metal");
+INSERT INTO building_description VALUES ("W", "STRUCTURE", "Wood");
+INSERT INTO building_description VALUES ("A", "STYLE", "Commercial");
+INSERT INTO building_description VALUES ("B", "STYLE", "Industrial");
+INSERT INTO building_description VALUES ("C", "STYLE", "Apartments");
+INSERT INTO building_description VALUES ("D", "STYLE", "Dutch Colonial");
+INSERT INTO building_description VALUES ("E", "STYLE", "English Tudor");
+INSERT INTO building_description VALUES ("L", "STYLE", "Colonial");
+INSERT INTO building_description VALUES ("M", "STYLE", "Mobile Home");
+INSERT INTO building_description VALUES ("R", "STYLE", "Rancher");
+INSERT INTO building_description VALUES ("S", "STYLE", "Split Level");
+INSERT INTO building_description VALUES ("T", "STYLE", "Twin");
+INSERT INTO building_description VALUES ("W", "STYLE", "Row Home");
+INSERT INTO building_description VALUES ("X", "STYLE", "Duplex");
+INSERT INTO building_description VALUES ("Z", "STYLE", "Raised Rancher");
+INSERT INTO building_description VALUES ("O", "STYLE", "Other");
+INSERT INTO building_description VALUES ("2", "STYLE", "Bi-Level");
+INSERT INTO building_description VALUES ("3", "STYLE", "Tri-Level");
+INSERT INTO building_description VALUES ("AG", "GARAGE", "Attached Garage");
+INSERT INTO building_description VALUES ("UG", "GARAGE", "Unattached Garage");
+
+
+
+DROP TABLE IF EXISTS sales_price_code;
+
+CREATE TABLE IF NOT EXISTS sales_price_code (
+  sales_price_cd  CHAR(1),
+  sales_price_desc  VARCHAR(30)
+);
+
+INSERT INTO sales_price_code VALUES ("F","Fire");
+INSERT INTO sales_price_code VALUES ("G","Garbage");
+INSERT INTO sales_price_code VALUES ("L","Light");
+INSERT INTO sales_price_code VALUES ("S","Special Improvement District");
+INSERT INTO sales_price_code VALUES ("W","Water");
+
+
+
+DROP TABLE IF EXISTS exemption_code;
+
+CREATE TABLE IF NOT EXISTS exemption_code (
+  exemption_cd  CHAR(1),
+  exemption_desc  VARCHAR(39)
+);
+
+INSERT INTO exemption_code VALUES ("E","Fire Suppression");
+INSERT INTO exemption_code VALUES ("F","Fallout Shelter");
+INSERT INTO exemption_code VALUES ("P","Pollution Control");
+INSERT INTO exemption_code VALUES ("W","Water Supple Control");
+INSERT INTO exemption_code VALUES ("Y","Renewable Energy");
+INSERT INTO exemption_code VALUES ("B","Commercial/Industrial");
+INSERT INTO exemption_code VALUES ("H","Household Improvement");
+INSERT INTO exemption_code VALUES ("M","Multifamily Dwelling Improvement");
+INSERT INTO exemption_code VALUES ("G","Commercial/Industrial Exemption");
+INSERT INTO exemption_code VALUES ("I","Dwell Exemption");
+INSERT INTO exemption_code VALUES ("J","Dwell Abatement");
+INSERT INTO exemption_code VALUES ("K","New Dwell Conv. Exemption");
+INSERT INTO exemption_code VALUES ("L","New Dwell Conv. Abatement");
+INSERT INTO exemption_code VALUES ("N","Mult. Dwell Exemption");
+INSERT INTO exemption_code VALUES ("O","Mult. Dwell Abatement");
+INSERT INTO exemption_code VALUES ("U","UEZ Abatement (Urban Enterprise Zone)");
+
+
+
+
+DROP TABLE IF EXISTS deductions;
+
+CREATE TABLE IF NOT EXISTS deductions (
+  deduction_cd  CHAR(1),
+  amount  real,
+  deduction_desc  VARCHAR(16)
+);
+
+INSERT INTO deductions VALUES ("S", 250, "SENIOR CITIZENS");
+INSERT INTO deductions VALUES ("V", 250, "VETERANS");
+INSERT INTO deductions VALUES ("W", 250, "WIDOWS");
+INSERT INTO deductions VALUES ("R", 250, "SURVIVING SPOUSE");
+INSERT INTO deductions VALUES ("D", 250, "DISABLED PERSONS");
+
+
+
+DROP TABLE IF EXISTS property_use_code ;
+
+CREATE TABLE IF NOT EXISTS property_use_code (
+  property_use_cd  CHAR(3),
+  property_use_desc  VARCHAR(30)
+);
+
+
+INSERT INTO property_use_code VALUES ("010", "AIRPORT*" );
+INSERT INTO property_use_code VALUES ("222", "GREENHOUSE / NURSERY" );
+INSERT INTO property_use_code VALUES ("020", "APT - GARDEN" );
+INSERT INTO property_use_code VALUES ("230", "HISTORICAL SITE*" );
+INSERT INTO property_use_code VALUES ("021", "APT - HIGH RISE" );
+INSERT INTO property_use_code VALUES ("270", "HOSP - CONVALESCENT" );
+INSERT INTO property_use_code VALUES ("029", "APT - OTHER" );
+INSERT INTO property_use_code VALUES ("271", "HOSP - GENERAL" );
+INSERT INTO property_use_code VALUES ("030", "AUTO SHOW ROOM" );
+INSERT INTO property_use_code VALUES ("272", "HOSP - VETERINARY" );
+INSERT INTO property_use_code VALUES ("031", "AUTO SALES LOT" );
+INSERT INTO property_use_code VALUES ("273", "HOSP - ASSISTED LIVING" );
+INSERT INTO property_use_code VALUES ("040", "ASPHALT/CEMENT PLANT*" );
+INSERT INTO property_use_code VALUES ("278", "HOSP - NURSING HOME" );
+INSERT INTO property_use_code VALUES ("050", "BANK - MAIN OFFICE" );
+INSERT INTO property_use_code VALUES ("279", "HOSP - OTHER" );
+INSERT INTO property_use_code VALUES ("051", "BANK - BRANCH" );
+INSERT INTO property_use_code VALUES ("280", "HOTEL" );
+INSERT INTO property_use_code VALUES ("059", "BANK - OTHER" );
+INSERT INTO property_use_code VALUES ("281", "HOTEL - CONFERENCE CENTER" );
+INSERT INTO property_use_code VALUES ("060", "BILLBOARD - WOOD" );
+INSERT INTO property_use_code VALUES ("282", "ROOMING HOUSE" );
+INSERT INTO property_use_code VALUES ("061", "BILLBOARD - OTHER" );
+INSERT INTO property_use_code VALUES ("283", "BED AND BREAKFAST*" );
+INSERT INTO property_use_code VALUES ("070", "BOWLING ALLEY" );
+INSERT INTO property_use_code VALUES ("330", "INDUSTRIAL / MANUFACTURING" );
+INSERT INTO property_use_code VALUES ("073", "CAMPGROUND" );
+INSERT INTO property_use_code VALUES ("331", "INDUSTRIAL - OTHER" );
+INSERT INTO property_use_code VALUES ("074", "CEMETERY" );
+INSERT INTO property_use_code VALUES ("335", "CORRECTIONAL FACILITY / PRISON" );
+INSERT INTO property_use_code VALUES ("075", "COLLEGE" );
+INSERT INTO property_use_code VALUES ("430", "KENNEL" );
+INSERT INTO property_use_code VALUES ("080", "CASINO*" );
+INSERT INTO property_use_code VALUES ("440", "LUMBER YARD" );
+INSERT INTO property_use_code VALUES ("100", "COMMERCIAL - OTHER" );
+INSERT INTO property_use_code VALUES ("441", "LAUNDRY / CLEANERS" );
+INSERT INTO property_use_code VALUES ("101", "COMMERCIAL - MIXED USE*" );
+INSERT INTO property_use_code VALUES ("442", "LIBRARY" );
+INSERT INTO property_use_code VALUES ("110", "CAR WASH" );
+INSERT INTO property_use_code VALUES ("510", "MARINA" );
+INSERT INTO property_use_code VALUES ("120", "DAIRY FARM" );
+INSERT INTO property_use_code VALUES ("511", "MARINA - DOCK/SLIP" );
+INSERT INTO property_use_code VALUES ("130", "CHURCH - RESIDENCE" );
+INSERT INTO property_use_code VALUES ("512", "MOBILE HOME PARK" );
+INSERT INTO property_use_code VALUES ("180", "FLEA MARKET - AUCTION*" );
+INSERT INTO property_use_code VALUES ("530", "MOTEL" );
+INSERT INTO property_use_code VALUES ("190", "FUNERAL HOME" );
+INSERT INTO property_use_code VALUES ("540", "MUSEUM*" );
+INSERT INTO property_use_code VALUES ("191", "FIRE / RESCUE STATION" );
+INSERT INTO property_use_code VALUES ("560", "OFFICE - GENERAL" );
+INSERT INTO property_use_code VALUES ("210", "GARAGE - SERVICE / GAS" );
+INSERT INTO property_use_code VALUES ("561", "OFFICE - CORP. HEADQUARTERS" );
+INSERT INTO property_use_code VALUES ("211", "GARAGE - PARKING" );
+INSERT INTO property_use_code VALUES ("562", "OFFICE - MEDICAL / MENTAL HEALTH*" );
+INSERT INTO property_use_code VALUES ("212", "PARKING LOT" );
+INSERT INTO property_use_code VALUES ("563", "OFFICE - ENGINEERING / RESEARCH" );
+INSERT INTO property_use_code VALUES ("218", "GAS / STORAGE TANK" );
+INSERT INTO property_use_code VALUES ("564", "OFFICE - GOVERNMENT" );
+INSERT INTO property_use_code VALUES ("219", "GARAGE - OTHER" );
+INSERT INTO property_use_code VALUES ("565", "OFFICE - W/ RESIDENTIAL" );
+INSERT INTO property_use_code VALUES ("220", "GARAGE - STORAGE" );
+INSERT INTO property_use_code VALUES ("566", "OFFICE - CONDO*" );
+INSERT INTO property_use_code VALUES ("221", "GOV'T BUILDING" );
+INSERT INTO property_use_code VALUES ("569", "OFFICE - OTHER" );
+INSERT INTO property_use_code VALUES ("569", "OFFICE - OTHER" );
+INSERT INTO property_use_code VALUES ("730", "STORE - CONVENIENCE" );
+INSERT INTO property_use_code VALUES ("570", "POST OFFICE" );
+INSERT INTO property_use_code VALUES ("731", "STORE - DEPARTMENT" );
+INSERT INTO property_use_code VALUES ("571", "FOOD & BEVERAGE PROCESSING" );
+INSERT INTO property_use_code VALUES ("732", "STORE - MALL" );
+INSERT INTO property_use_code VALUES ("580", "QUARRY - STONE / SAND*" );
+INSERT INTO property_use_code VALUES ("733", "STORE - SHOPPING CENTER" );
+INSERT INTO property_use_code VALUES ("610", "REC - CLUB HOUSE" );
+INSERT INTO property_use_code VALUES ("734", "STORE - SUPERMARKET" );
+INSERT INTO property_use_code VALUES ("611", "REC - COMMUNITY CENTER" );
+INSERT INTO property_use_code VALUES ("737", "STORE - RETAIL" );
+INSERT INTO property_use_code VALUES ("612", "REC - COUNTRY CLUB" );
+INSERT INTO property_use_code VALUES ("738", "STORE - W/ RESIDENTIAL" );
+INSERT INTO property_use_code VALUES ("613", "REC - GYMNASIUM" );
+INSERT INTO property_use_code VALUES ("739", "STORE - OTHER" );
+INSERT INTO property_use_code VALUES ("614", "REC - HEALTH CLUB" );
+INSERT INTO property_use_code VALUES ("740", "STORE - FARM MARKET*" );
+INSERT INTO property_use_code VALUES ("615", "REC - RINK / ICE" );
+INSERT INTO property_use_code VALUES ("750", "TRAIN / BUS DEPOT*" );
+INSERT INTO property_use_code VALUES ("616", "REC - RACQUET CLUB" );
+INSERT INTO property_use_code VALUES ("760", "TELEPHONE BUILDING" );
+INSERT INTO property_use_code VALUES ("617", "REC - ROLLER RINK" );
+INSERT INTO property_use_code VALUES ("761", "PUBLIC UTILITY BUILDING" );
+INSERT INTO property_use_code VALUES ("618", "REC - INDOOR" );
+INSERT INTO property_use_code VALUES ("770", "THEATER - DRIVE-IN" );
+INSERT INTO property_use_code VALUES ("619", "REC - ARCADE*" );
+INSERT INTO property_use_code VALUES ("771", "THEATER - MOVIE" );
+INSERT INTO property_use_code VALUES ("620", "REC - AMUSEMENT PARK*" );
+INSERT INTO property_use_code VALUES ("772", "THEATER - PLAYHOUSE" );
+INSERT INTO property_use_code VALUES ("621", "REC - GOLF COURSE*" );
+INSERT INTO property_use_code VALUES ("670", "SWIM CLUB" );
+INSERT INTO property_use_code VALUES ("622", "REC - MINI GOLF*" );
+INSERT INTO property_use_code VALUES ("779", "THEATER - OTHER" );
+INSERT INTO property_use_code VALUES ("623", "REC - RACETRACK - AUTO/HORSE*" );
+INSERT INTO property_use_code VALUES ("780", "TOWER - RADIO" );
+INSERT INTO property_use_code VALUES ("624", "REC - ARENA*" );
+INSERT INTO property_use_code VALUES ("781", "TOWER - TV" );
+INSERT INTO property_use_code VALUES ("629", "REC - OTHER" );
+INSERT INTO property_use_code VALUES ("782", "TOWER - OTHER" );
+INSERT INTO property_use_code VALUES ("635", "RESIDENTIAL CO-OP" );
+INSERT INTO property_use_code VALUES ("783", "TOWER - CELLULAR" );
+INSERT INTO property_use_code VALUES ("639", "REST - TAVERN / NIGHT CLUB" );
+INSERT INTO property_use_code VALUES ("790", "TRUCK TERMINAL" );
+INSERT INTO property_use_code VALUES ("640", "REST - DINER" );
+INSERT INTO property_use_code VALUES ("791", "TRUCK STOP*" );
+INSERT INTO property_use_code VALUES ("641", "REST - FAST FOOD" );
+INSERT INTO property_use_code VALUES ("940", "WINERY / BREWERY*" );
+INSERT INTO property_use_code VALUES ("642", "REST - BANQUET HALL" );
+INSERT INTO property_use_code VALUES ("950", "WAREHOUSE - FREEZER" );
+INSERT INTO property_use_code VALUES ("643", "REST - W/ APARTMENT*" );
+INSERT INTO property_use_code VALUES ("951", "WAREHOUSE - GENERAL STORAGE" );
+INSERT INTO property_use_code VALUES ("649", "REST - OTHER" );
+INSERT INTO property_use_code VALUES ("952", "WAREHOUSE - MINI SELF-STORAGE" );
+INSERT INTO property_use_code VALUES ("650", "RECYCLING FACILITY*" );
+INSERT INTO property_use_code VALUES ("959", "WAREHOUSE - OTHER" );
+INSERT INTO property_use_code VALUES ("660", "SCHOOL" );
+INSERT INTO property_use_code VALUES ("960", "WAREHOUSE - ARCHIVES" );
+INSERT INTO property_use_code VALUES ("661", "DAYCARE CENTER*" );
+INSERT INTO property_use_code VALUES ("970", "REFINERY" );
+
+
+
+
+DROP TABLE IF EXISTS rebate_response_flg ;
+
+CREATE TABLE IF NOT EXISTS rebate_response_flg (
+  rebate_response_flg CHAR(1),
+  special_tax_desc  VARCHAR(30)
+);
+
+INSERT INTO rebate_response_flg VALUES ("Y","No tenant rebate required");
+INSERT INTO rebate_response_flg VALUES ("N","tenant rebate notice is required");
+
+
+
+
+DROP TABLE IF EXISTS special_tax_code;
+
+CREATE TABLE IF NOT EXISTS special_tax_code (
+  special_tax_cd  CHAR(1),
+  special_tax_desc  VARCHAR(14)
+);
+
+INSERT INTO special_tax_code VALUES ("A","Actual");
+INSERT INTO special_tax_code VALUES ("F","Field");
+INSERT INTO special_tax_code VALUES ("Q","Questionaire");
+
+
+
+DROP TABLE IF EXISTS property_class;
+
+CREATE TABLE IF NOT EXISTS property_class (
+  property_class_cd  VARCHAR(3),
+  property_class  VARCHAR(55)
+);
+
+INSERT INTO property_class VALUES ("1","Vacant Land");
+INSERT INTO property_class VALUES ("6A","Personal Property Telephone");
+INSERT INTO property_class VALUES ("2","Residential");
+INSERT INTO property_class VALUES ("6B","Machinery, Apparatus or Equipment of Petroleum Refineries");
+INSERT INTO property_class VALUES ("3A","Farm (Regular)");
+INSERT INTO property_class VALUES ("3B","Farm (Qualified)");
+INSERT INTO property_class VALUES ("15A","Public School Property");
+INSERT INTO property_class VALUES ("4A","Commercial");
+INSERT INTO property_class VALUES ("15B","Other School Property");
+INSERT INTO property_class VALUES ("4B","Industrial");
+INSERT INTO property_class VALUES ("15C","Public Property");
+INSERT INTO property_class VALUES ("4C","Apartment");
+INSERT INTO property_class VALUES ("15D","Church & Charitable Property");
+INSERT INTO property_class VALUES ("5A","Class I Railroad Property");
+INSERT INTO property_class VALUES ("15E","Cemeteries & Graveyards");
+INSERT INTO property_class VALUES ("5B","Class II Railroad Property");
+INSERT INTO property_class VALUES ("15F","Other Exempt properties not included in the above classifications");
+
+
+
+
+
+DROP TABLE IF EXISTS qualifier;
+
+CREATE TABLE IF NOT EXISTS qualifier (
+  qualifier_cd  VARCHAR(2),
+  qualifier  VARCHAR(36)
+);
+
+INSERT INTO qualifier VALUES ("W", "Ward");
+INSERT INTO qualifier VALUES ("S", "Sector");
+INSERT INTO qualifier VALUES ("T", "Cell Tower");
+INSERT INTO qualifier VALUES ("B", "Billboard");
+INSERT INTO qualifier VALUES ("Q", "Farmland");
+INSERT INTO qualifier VALUES ("LO", "Building");
+INSERT INTO qualifier VALUES ("BL", "Building");
+INSERT INTO qualifier VALUES ("C", "Condominium");
+INSERT INTO qualifier VALUES ("M", "Mobile Home");
+INSERT INTO qualifier VALUES ("FP", "Flood Plain");
+INSERT INTO qualifier VALUES ("X", "Exempt Ratable");
+INSERT INTO qualifier VALUES ("HL", "Highlands under Ch. 120, P.L. 2004");
+INSERT INTO qualifier VALUES ("HM", "Hackensack Meadowlands");
+INSERT INTO qualifier VALUES ("PL", "Pinelands");
+INSERT INTO qualifier VALUES ("Z", "Coastal Zone");
+INSERT INTO qualifier VALUES ("L", "Wetlands");
+
+
+
+
+DROP TABLE IF EXISTS county;
+
+CREATE Table county (
+  countyCd char(2),
+  countyName varchar(23)
+);
+
+INSERT INTO county VALUES ("01", "ATLANTIC");
+INSERT INTO county VALUES ("02", "BERGEN");
+INSERT INTO county VALUES ("03", "BURLINGTON");
+INSERT INTO county VALUES ("04", "CAMDEN");
+INSERT INTO county VALUES ("05", "CAPE MAY");
+INSERT INTO county VALUES ("06", "CUMBERLAND");
+INSERT INTO county VALUES ("07", "ESSEX");
+INSERT INTO county VALUES ("08", "GLOUCESTER");
+INSERT INTO county VALUES ("09", "HUDSON");
+INSERT INTO county VALUES ("10", "HUNTERDON");
+INSERT INTO county VALUES ("11", "MERCER");
+INSERT INTO county VALUES ("12", "MIDDLESEX");
+INSERT INTO county VALUES ("13", "MONMOUTH");
+INSERT INTO county VALUES ("14", "MORRIS");
+INSERT INTO county VALUES ("15", "OCEAN");
+INSERT INTO county VALUES ("16", "PASSAIC");
+INSERT INTO county VALUES ("17", "SALEM");
+INSERT INTO county VALUES ("18", "SOMERSET");
+INSERT INTO county VALUES ("19", "SUSSEX");
+INSERT INTO county VALUES ("20", "UNION");
+INSERT INTO county VALUES ("21", "WARREN");
+
+
+DROP TABLE IF EXISTS county_district;
+
+CREATE Table IF NOT EXISTS county_district (
+  county_district_cd char(4),
+  district varchar(23),
+  county varchar(23)
+);
+
+
+INSERT INTO county_district VALUES ("0101", "ABSECON CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0102", "ATLANTIC CITY CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0103", "BRIGANTINE CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0104", "BUENA BORO", "ATLANTIC");
+INSERT INTO county_district VALUES ("0105", "BUENA VISTA TWP", "ATLANTIC");
+INSERT INTO county_district VALUES ("0106", "CORBIN CITY CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0107", "EGG HARBOR CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0108", "EGG HARBOR TWP", "ATLANTIC");
+INSERT INTO county_district VALUES ("0109", "ESTELL MANOR CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0110", "FOLSOM BORO", "ATLANTIC");
+INSERT INTO county_district VALUES ("0111", "GALLOWAY TWP", "ATLANTIC");
+INSERT INTO county_district VALUES ("0112", "HAMILTON TWP", "ATLANTIC");
+INSERT INTO county_district VALUES ("0113", "HAMMONTON TOWN", "ATLANTIC");
+INSERT INTO county_district VALUES ("0114", "LINWOOD CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0115", "LONGPORT BORO", "ATLANTIC");
+INSERT INTO county_district VALUES ("0116", "MARGATE CITY CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0117", "MULLICA TWP", "ATLANTIC");
+INSERT INTO county_district VALUES ("0118", "NORTHFIELD CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0119", "PLEASANTVILLE CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0120", "PORT REPUBLIC CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0121", "SOMERS POINT CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0122", "VENTNOR CITY", "ATLANTIC");
+INSERT INTO county_district VALUES ("0123", "WEYMOUTH TWP", "ATLANTIC");
+INSERT INTO county_district VALUES ("0201", "ALLENDALE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0202", "ALPINE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0203", "BERGENFIELD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0204", "BOGOTA BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0205", "CARLSTADT BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0206", "CLIFFSIDE PARK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0207", "CLOSTER BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0208", "CRESSKILL BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0209", "DEMAREST BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0210", "DUMONT BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0211", "ELMWOOD PARK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0212", "E RUTHERFORD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0213", "EDGEWATER BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0214", "EMERSON BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0215", "ENGLEWOOD CITY", "BERGEN");
+INSERT INTO county_district VALUES ("0216", "ENGLEWOOD CLIFFS BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0217", "FAIRLAWN BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0218", "FAIRVIEW BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0219", "FORT LEE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0220", "FRANKLIN LAKES BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0221", "GARFIELD CITY", "BERGEN");
+INSERT INTO county_district VALUES ("0222", "GLEN ROCK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0223", "HACKENSACK CITY", "BERGEN");
+INSERT INTO county_district VALUES ("0224", "HARRINGTON PARK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0225", "HASBROUCK HGHTS BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0226", "HAWORTH BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0227", "HILLSDALE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0228", "HOHOKUS BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0229", "LEONIA BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0230", "LITTLE FERRY BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0231", "LODI BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0232", "LYNDHURST TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0233", "MAHWAH TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0234", "MAYWOOD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0235", "MIDLAND PARK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0236", "MONTVALE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0237", "MOONACHIE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0238", "NEW MILFORD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0239", "NORTH ARLINGTON BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0240", "NORTHVALE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0241", "NORWOOD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0242", "OAKLAND BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0243", "OLD TAPPAN BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0244", "ORADELL BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0245", "PALISADES PARK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0246", "PARAMUS BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0247", "PARK RIDGE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0248", "RAMSEY BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0249", "RIDGEFIELD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0250", "RIDGEFIELD PARK VILLAGE", "BERGEN");
+INSERT INTO county_district VALUES ("0251", "RIDGEWOOD VILLAGE", "BERGEN");
+INSERT INTO county_district VALUES ("0252", "RIVEREDGE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0253", "RIVERVALE TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0254", "ROCHELLE PARK TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0255", "ROCKLEIGH BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0256", "RUTHERFORD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0257", "SADDLE BROOK TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0258", "SADDLE RIVER BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0259", "SO HACKENSACK TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0260", "TEANECK TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0261", "TENAFLY BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0262", "TETERBORO BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0263", "UPPER SADDLE RIV BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0264", "WALDWICK BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0265", "WALLINGTON BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0266", "WASHINGTON TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0267", "WESTWOOD BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0268", "WOODCLIFF LAKE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0269", "WOOD RIDGE BORO", "BERGEN");
+INSERT INTO county_district VALUES ("0270", "WYCKOFF TWP", "BERGEN");
+INSERT INTO county_district VALUES ("0301", "BASS RIVER TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0302", "BEVERLY CITY", "BURLINGTON");
+INSERT INTO county_district VALUES ("0303", "BORDENTOWN CITY", "BURLINGTON");
+INSERT INTO county_district VALUES ("0304", "BORDENTOWN TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0305", "BURLINGTON CITY", "BURLINGTON");
+INSERT INTO county_district VALUES ("0306", "BURLINGTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0307", "CHESTERFIELD TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0308", "CINNAMINSON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0309", "DELANCO TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0310", "DELRAN TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0311", "EASTAMPTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0312", "EDGEWATER PARK TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0313", "EVESHAM TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0314", "FIELDSBORO BORO", "BURLINGTON");
+INSERT INTO county_district VALUES ("0315", "FLORENCE TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0316", "HAINESPORT TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0317", "LUMBERTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0318", "MANSFIELD TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0319", "MAPLE SHADE TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0320", "MEDFORD TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0321", "MEDFORD LAKES BORO", "BURLINGTON");
+INSERT INTO county_district VALUES ("0322", "MOORESTOWN TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0323", "MT HOLLY TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0324", "MT LAUREL TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0325", "NEW HANOVER TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0326", "NO HANOVER TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0327", "PALMYRA BORO", "BURLINGTON");
+INSERT INTO county_district VALUES ("0328", "PEMBERTON BORO", "BURLINGTON");
+INSERT INTO county_district VALUES ("0329", "PEMBERTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0330", "RIVERSIDE TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0331", "RIVERTON BORO", "BURLINGTON");
+INSERT INTO county_district VALUES ("0332", "SHAMONG TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0333", "SOUTHAMPTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0334", "SPRINGFIELD TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0335", "TABERNACLE TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0336", "WASHINGTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0337", "WESTAMPTON TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0338", "WILLINGBORO TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0339", "WOODLAND TWP", "BURLINGTON");
+INSERT INTO county_district VALUES ("0340", "WRIGHTSTOWN BORO", "BURLINGTON");
+INSERT INTO county_district VALUES ("0401", "AUDUBON BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0402", "AUDUBON PARK BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0403", "BARRINGTON BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0404", "BELLMAWR BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0405", "BERLIN BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0406", "BERLIN TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0407", "BROOKLAWN BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0408", "CAMDEN CITY", "CAMDEN");
+INSERT INTO county_district VALUES ("0409", "CHERRY HILL TWNSHP", "CAMDEN");
+INSERT INTO county_district VALUES ("0410", "CHESILHURST BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0411", "CLEMENTON BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0412", "COLLINGSWOOD BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0413", "GIBBSBORO BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0414", "GLOUCESTER CITY", "CAMDEN");
+INSERT INTO county_district VALUES ("0415", "GLOUCESTER TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0416", "HADDON TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0417", "HADDONFIELD BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0418", "HADDON HEIGHTS BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0419", "HI NELLA BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0420", "LAUREL SPRINGS BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0421", "LAWNSIDE BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0422", "LINDENWOLD BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0423", "MAGNOLIA BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0424", "MERCHANTVILLE BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0425", "MOUNT EPHRAIM BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0426", "OAKLYN BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0427", "PENNSAUKEN TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0428", "PINE HILL BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0429", "PINE VALLEY BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0430", "RUNNEMEDE BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0431", "SOMERDALE BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0432", "STRATFORD BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0433", "TAVISTOCK BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0434", "VOORHEES TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0435", "WATERFORD TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0436", "WINSLOW TWP", "CAMDEN");
+INSERT INTO county_district VALUES ("0437", "WOODLYNNE BORO", "CAMDEN");
+INSERT INTO county_district VALUES ("0501", "AVALON BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0502", "CAPE MAY CITY", "CAPE MAY");
+INSERT INTO county_district VALUES ("0503", "CAPE MAY POINT BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0504", "DENNIS TWP", "CAPE MAY");
+INSERT INTO county_district VALUES ("0505", "LOWER TWP", "CAPE MAY");
+INSERT INTO county_district VALUES ("0506", "MIDDLE TWP", "CAPE MAY");
+INSERT INTO county_district VALUES ("0507", "NORTH WILDWOOD CITY", "CAPE MAY");
+INSERT INTO county_district VALUES ("0508", "OCEAN CITY CITY", "CAPE MAY");
+INSERT INTO county_district VALUES ("0509", "SEA ISLE CITY CITY", "CAPE MAY");
+INSERT INTO county_district VALUES ("0510", "STONE HARBOR BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0511", "UPPER TWP", "CAPE MAY");
+INSERT INTO county_district VALUES ("0512", "WEST CAPE MAY BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0513", "WEST WILDWOOD BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0514", "WILDWOOD CITY", "CAPE MAY");
+INSERT INTO county_district VALUES ("0515", "WILDWOOD CREST BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0516", "WOODBINE BORO", "CAPE MAY");
+INSERT INTO county_district VALUES ("0601", "BRIDGETON CITY", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0602", "COMMERCIAL TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0603", "DEERFIELD TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0604", "DOWNE TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0605", "FAIRFIELD TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0606", "GREENWICH TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0607", "HOPEWELL TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0608", "LAWRENCE TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0609", "MAURICE RIVER TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0610", "MILLVILLE CITY", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0611", "SHILOH BORO", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0612", "STOW CREEK TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0613", "UPPER DEERFIELD TWP", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0614", "VINELAND CITY", "CUMBERLAND");
+INSERT INTO county_district VALUES ("0701", "BELLEVILLE TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0702", "BLOOMFIELD TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0703", "CALDWELL BORO TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0704", "CEDAR GROVE TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0705", "EAST ORANGE CITY", "ESSEX");
+INSERT INTO county_district VALUES ("0706", "ESSEX FELLS TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0707", "FAIRFIELD TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0708", "GLEN RIDGE BORO", "ESSEX");
+INSERT INTO county_district VALUES ("0709", "IRVINGTON TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0710", "LIVINGSTON TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0711", "MAPLEWOOD TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0712", "MILLBURN TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0713", "MONTCLAIR TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0714", "NEWARK CITY", "ESSEX");
+INSERT INTO county_district VALUES ("0715", "NORTH CALDWELL TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0716", "NUTLEY TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0717", "ORANGE CITY TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0718", "ROSELAND BORO", "ESSEX");
+INSERT INTO county_district VALUES ("0719", "SOUTH ORANGE VILLAGE TW", "ESSEX");
+INSERT INTO county_district VALUES ("0720", "VERONA TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0721", "WEST CALDWELL TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0722", "WEST ORANGE TWP", "ESSEX");
+INSERT INTO county_district VALUES ("0801", "CLAYTON BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0802", "DEPTFORD TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0803", "EAST GREENWICH TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0804", "ELK TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0805", "FRANKLIN TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0806", "GLASSBORO BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0807", "GREENWICH TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0808", "HARRISON TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0809", "LOGAN TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0810", "MANTUA TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0811", "MONROE TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0812", "NATIONAL PARK BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0813", "NEWFIELD BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0814", "PAULSBORO BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0815", "PITMAN BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0816", "SO HARRISON TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0817", "SWEDESBORO BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0818", "WASHINGTON TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0819", "WENONAH BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0820", "WEST DEPTFORD TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0821", "WESTVILLE BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0822", "WOODBURY CITY", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0823", "WOODBURY HEIGHTS BORO", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0824", "WOOLWICH TWP", "GLOUCESTER");
+INSERT INTO county_district VALUES ("0901", "BAYONNE CITY", "HUDSON");
+INSERT INTO county_district VALUES ("0902", "EAST NEWARK BORO", "HUDSON");
+INSERT INTO county_district VALUES ("0903", "GUTTENBERG TOWN", "HUDSON");
+INSERT INTO county_district VALUES ("0904", "HARRISON TOWN", "HUDSON");
+INSERT INTO county_district VALUES ("0905", "HOBOKEN CITY", "HUDSON");
+INSERT INTO county_district VALUES ("0906", "JERSEY CITY CITY", "HUDSON");
+INSERT INTO county_district VALUES ("0907", "KEARNY TOWN", "HUDSON");
+INSERT INTO county_district VALUES ("0908", "NORTH BERGEN TWP", "HUDSON");
+INSERT INTO county_district VALUES ("0909", "SECAUCUS TOWN", "HUDSON");
+INSERT INTO county_district VALUES ("0910", "UNION CITY CITY", "HUDSON");
+INSERT INTO county_district VALUES ("0911", "WEEHAWKEN TWP", "HUDSON");
+INSERT INTO county_district VALUES ("0912", "WEST NEW YORK TOWN", "HUDSON");
+INSERT INTO county_district VALUES ("1001", "ALEXANDRIA TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1002", "BETHLEHEM TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1003", "BLOOMSBURY BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1004", "CALIFON BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1005", "CLINTON TOWN", "HUNTERDON");
+INSERT INTO county_district VALUES ("1006", "CLINTON TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1007", "DELAWARE TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1008", "EAST AMWELL TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1009", "FLEMINGTON BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1010", "FRANKLIN TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1011", "FRENCHTOWN BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1012", "GLEN GARDNER BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1013", "HAMPTON BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1014", "HIGH BRIDGE BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1015", "HOLLAND TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1016", "KINGWOOD TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1017", "LAMBERTVILLE CITY", "HUNTERDON");
+INSERT INTO county_district VALUES ("1018", "LEBANON BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1019", "LEBANON TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1020", "MILFORD BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1021", "RARITAN TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1022", "READINGTON TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1023", "STOCKTON BORO", "HUNTERDON");
+INSERT INTO county_district VALUES ("1024", "TEWKSBURY TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1025", "UNION TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1026", "WEST AMWELL TWP", "HUNTERDON");
+INSERT INTO county_district VALUES ("1101", "EAST WINDSOR TWP", "MERCER");
+INSERT INTO county_district VALUES ("1102", "EWING TWP", "MERCER");
+INSERT INTO county_district VALUES ("1103", "HAMILTON TWP", "MERCER");
+INSERT INTO county_district VALUES ("1104", "HIGHTSTOWN BORO", "MERCER");
+INSERT INTO county_district VALUES ("1105", "HOPEWELL BORO", "MERCER");
+INSERT INTO county_district VALUES ("1106", "HOPEWELL TWP", "MERCER");
+INSERT INTO county_district VALUES ("1107", "LAWRENCE TWP", "MERCER");
+INSERT INTO county_district VALUES ("1108", "PENNINGTON BORO", "MERCER");
+INSERT INTO county_district VALUES ("1111", "TRENTON CITY", "MERCER");
+INSERT INTO county_district VALUES ("1112", "ROBBINSVILLE TWP", "MERCER");
+INSERT INTO county_district VALUES ("1113", "WEST WINDSOR TWP", "MERCER");
+INSERT INTO county_district VALUES ("1114", "PRINCETON", "MERCER");
+INSERT INTO county_district VALUES ("1201", "CARTERET BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1202", "CRANBURY TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1203", "DUNELLEN BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1204", "EAST BRUNSWICK TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1205", "EDISON TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1206", "HELMETTA BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1207", "HIGHLAND PARK BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1208", "JAMESBURG BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1209", "METUCHEN BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1210", "MIDDLESEX BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1211", "MILLTOWN BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1212", "MONROE TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1213", "NEW BRUNSWICK CITY", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1214", "NORTH BRUNSWICK TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1215", "OLD BRIDGE TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1216", "PERTH AMBOY CITY", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1217", "PISCATAWAY TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1218", "PLAINSBORO TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1219", "SAYREVILLE BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1220", "SOUTH AMBOY CITY", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1221", "SOUTH BRUNSWICK TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1222", "SOUTH PLAINFIELD BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1223", "SOUTH RIVER BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1224", "SPOTSWOOD BORO", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1225", "WOODBRIDGE TWP", "MIDDLESEX");
+INSERT INTO county_district VALUES ("1301", "ABERDEEN TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1302", "ALLENHURST BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1303", "ALLENTOWN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1304", "ASBURY PARK CITY", "MONMOUTH");
+INSERT INTO county_district VALUES ("1305", "ATLANTIC HIGHLANDS BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1306", "AVON BY THE SEA BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1307", "BELMAR BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1308", "BRADLEY BEACH BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1309", "BRIELLE BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1310", "COLTS NECK TOWNSHIP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1311", "DEAL BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1312", "EATONTOWN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1313", "ENGLISHTOWN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1314", "FAIR HAVEN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1315", "FARMINGDALE BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1316", "FREEHOLD BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1317", "FREEHOLD TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1318", "HAZLET TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1319", "HIGHLANDS BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1320", "HOLMDEL TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1321", "HOWELL TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1322", "INTERLAKEN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1323", "KEANSBURG BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1324", "KEYPORT BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1325", "LITTLE SILVER BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1326", "LOCH ARBOUR VILLAGE", "MONMOUTH");
+INSERT INTO county_district VALUES ("1327", "LONG BRANCH CITY", "MONMOUTH");
+INSERT INTO county_district VALUES ("1328", "MANALAPAN TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1329", "MANASQUAN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1330", "MARLBORO TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1331", "MATAWAN BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1332", "MIDDLETOWN TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1333", "MILLSTONE TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1334", "MONMOUTH BEACH BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1335", "NEPTUNE TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1336", "NEPTUNE CITY BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1337", "OCEAN TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1338", "OCEANPORT BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1339", "RED BANK BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1340", "ROOSEVELT BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1341", "RUMSON BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1342", "SEA BRIGHT BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1343", "SEA GIRT BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1344", "SHREWSBURY BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1345", "SHREWSBURY TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1346", "LAKE COMO BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1347", "SPRING LAKE BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1348", "SPRING LAKE HEIGHTS BOR", "MONMOUTH");
+INSERT INTO county_district VALUES ("1349", "TINTON FALLS BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1350", "UNION BEACH BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1351", "UPPER FREEHOLD TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1352", "WALL TWP", "MONMOUTH");
+INSERT INTO county_district VALUES ("1353", "WEST LONG BRANCH BORO", "MONMOUTH");
+INSERT INTO county_district VALUES ("1401", "BOONTON TOWN", "MORRIS");
+INSERT INTO county_district VALUES ("1402", "BOONTON TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1403", "BUTLER BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1404", "CHATHAM BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1405", "CHATHAM TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1406", "CHESTER BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1407", "CHESTER TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1408", "DENVILLE TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1409", "DOVER TOWN", "MORRIS");
+INSERT INTO county_district VALUES ("1410", "EAST HANOVER TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1411", "FLORHAM PARK BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1412", "HANOVER TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1413", "HARDING TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1414", "JEFFERSON TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1415", "KINNELON BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1416", "LINCOLN PARK BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1417", "MADISON BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1418", "MENDHAM BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1419", "MENDHAM TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1420", "MINE HILL TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1421", "MONTVILLE TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1422", "MORRIS TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1423", "MORRIS PLAINS BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1424", "MORRISTOWN TOWN", "MORRIS");
+INSERT INTO county_district VALUES ("1425", "MOUNTAIN LAKES BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1426", "MOUNT ARLINGTON BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1427", "MOUNT OLIVE TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1428", "NETCONG BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1429", "PARSIPPANY TR HLS TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1430", "LONG HILL TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1431", "PEQUANNOCK TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1432", "RANDOLPH TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1433", "RIVERDALE BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1434", "ROCKAWAY BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1435", "ROCKAWAY TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1436", "ROXBURY TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1437", "VICTORY GARDENS BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1438", "WASHINGTON TWP", "MORRIS");
+INSERT INTO county_district VALUES ("1439", "WHARTON BORO", "MORRIS");
+INSERT INTO county_district VALUES ("1501", "BARNEGAT TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1502", "BARNEGAT LIGHT BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1503", "BAY HEAD BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1504", "BEACH HAVEN BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1505", "BEACHWOOD BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1506", "BERKELEY TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1507", "BRICK TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1508", "TOMS RIVER TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1509", "EAGLESWOOD TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1510", "HARVEY CEDARS BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1511", "ISLAND HEIGHTS BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1512", "JACKSON TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1513", "LACEY TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1514", "LAKEHURST BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1515", "LAKEWOOD TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1516", "LAVALLETTE BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1517", "LITTLE EGG HARBOR TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1518", "LONG BEACH TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1519", "MANCHESTER TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1520", "MANTOLOKING BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1521", "OCEAN TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1522", "OCEAN GATE BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1523", "PINE BEACH BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1524", "PLUMSTED TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1525", "POINT PLEASANT BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1526", "PT PLEASANT BEACH BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1527", "SEASIDE HEIGHTS BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1528", "SEASIDE PARK BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1529", "SHIP BOTTOM BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1530", "SOUTH TOMS RIVER BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1531", "STAFFORD TWP", "OCEAN");
+INSERT INTO county_district VALUES ("1532", "SURF CITY BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1533", "TUCKERTON BORO", "OCEAN");
+INSERT INTO county_district VALUES ("1601", "BLOOMINGDALE BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1602", "CLIFTON CITY", "PASSAIC");
+INSERT INTO county_district VALUES ("1603", "HALEDON BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1604", "HAWTHORNE BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1605", "LITTLE FALLS TWP", "PASSAIC");
+INSERT INTO county_district VALUES ("1606", "NORTH HALEDON BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1607", "PASSAIC CITY", "PASSAIC");
+INSERT INTO county_district VALUES ("1608", "PATERSON CITY", "PASSAIC");
+INSERT INTO county_district VALUES ("1609", "POMPTON LAKES BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1610", "PROSPECT PARK BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1611", "RINGWOOD BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1612", "TOTOWA BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1613", "WANAQUE BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1614", "WAYNE TWP", "PASSAIC");
+INSERT INTO county_district VALUES ("1615", "WEST MILFORD TWP", "PASSAIC");
+INSERT INTO county_district VALUES ("1616", "WOODLAND PARK BORO", "PASSAIC");
+INSERT INTO county_district VALUES ("1701", "ALLOWAY TOWNSHIP", "SALEM");
+INSERT INTO county_district VALUES ("1702", "CARNEYS POINT TOWNSHIP", "SALEM");
+INSERT INTO county_district VALUES ("1703", "ELMER BORO", "SALEM");
+INSERT INTO county_district VALUES ("1704", "ELSINBORO TWP", "SALEM");
+INSERT INTO county_district VALUES ("1705", "LOWER ALLOWAY CREEK TWP", "SALEM");
+INSERT INTO county_district VALUES ("1706", "MANNINGTON TWP", "SALEM");
+INSERT INTO county_district VALUES ("1707", "OLDMANS TWP", "SALEM");
+INSERT INTO county_district VALUES ("1708", "PENNS GROVE BORO", "SALEM");
+INSERT INTO county_district VALUES ("1709", "PENNSVILLE TWP", "SALEM");
+INSERT INTO county_district VALUES ("1710", "PILESGROVE TWP", "SALEM");
+INSERT INTO county_district VALUES ("1711", "PITTSGROVE TWP", "SALEM");
+INSERT INTO county_district VALUES ("1712", "QUINTON TWP", "SALEM");
+INSERT INTO county_district VALUES ("1713", "SALEM CITY", "SALEM");
+INSERT INTO county_district VALUES ("1714", "UPPER PITTSGROVE TWP", "SALEM");
+INSERT INTO county_district VALUES ("1715", "WOODSTOWN BORO", "SALEM");
+INSERT INTO county_district VALUES ("1801", "BEDMINSTER TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1802", "BERNARDS TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1803", "BERNARDSVILLE BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1804", "BOUND BROOK BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1805", "BRANCHBURG TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1806", "BRIDGEWATER TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1807", "FAR HILLS BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1808", "FRANKLIN TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1809", "GREEN BROOK TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1810", "HILLSBOROUGH TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1811", "MANVILLE BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1812", "MILLSTONE BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1813", "MONTGOMERY TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1814", "NORTH PLAINFIELD BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1815", "PEAPACK GLADSTONE BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1816", "RARITAN BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1817", "ROCKY HILL BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1818", "SOMERVILLE BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1819", "SO BOUND BROOK BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1820", "WARREN TWP", "SOMERSET");
+INSERT INTO county_district VALUES ("1821", "WATCHUNG BORO", "SOMERSET");
+INSERT INTO county_district VALUES ("1901", "ANDOVER BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1902", "ANDOVER TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1903", "BRANCHVILLE BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1904", "BYRAM TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1905", "FRANKFORD TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1906", "FRANKLIN BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1907", "FREDON TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1908", "GREEN TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1909", "HAMBURG BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1910", "HAMPTON TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1911", "HARDYSTON TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1912", "HOPATCONG BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1913", "LAFAYETTE TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1914", "MONTAGUE TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1915", "NEWTON TOWN", "SUSSEX");
+INSERT INTO county_district VALUES ("1916", "OGDENSBURG BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1917", "SANDYSTON TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1918", "SPARTA TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1919", "STANHOPE BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1920", "STILLWATER TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1921", "SUSSEX BORO", "SUSSEX");
+INSERT INTO county_district VALUES ("1922", "VERNON TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1923", "WALPACK TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("1924", "WANTAGE TWP", "SUSSEX");
+INSERT INTO county_district VALUES ("2001", "BERKELEY HEIGHTS TWP", "UNION");
+INSERT INTO county_district VALUES ("2002", "CLARK TWP", "UNION");
+INSERT INTO county_district VALUES ("2003", "CRANFORD TWP", "UNION");
+INSERT INTO county_district VALUES ("2004", "ELIZABETH CITY", "UNION");
+INSERT INTO county_district VALUES ("2005", "FANWOOD BORO", "UNION");
+INSERT INTO county_district VALUES ("2006", "GARWOOD BORO", "UNION");
+INSERT INTO county_district VALUES ("2007", "HILLSIDE TWP", "UNION");
+INSERT INTO county_district VALUES ("2008", "KENILWORTH BORO", "UNION");
+INSERT INTO county_district VALUES ("2009", "LINDEN CITY", "UNION");
+INSERT INTO county_district VALUES ("2010", "MOUNTAINSIDE BORO", "UNION");
+INSERT INTO county_district VALUES ("2011", "NEW PROVIDENCE BORO", "UNION");
+INSERT INTO county_district VALUES ("2012", "PLAINFIELD CITY", "UNION");
+INSERT INTO county_district VALUES ("2013", "RAHWAY CITY", "UNION");
+INSERT INTO county_district VALUES ("2014", "ROSELLE BORO", "UNION");
+INSERT INTO county_district VALUES ("2015", "ROSELLE PARK BORO", "UNION");
+INSERT INTO county_district VALUES ("2016", "SCOTCH PLAINS TWP", "UNION");
+INSERT INTO county_district VALUES ("2017", "SPRINGFIELD TWP", "UNION");
+INSERT INTO county_district VALUES ("2018", "SUMMIT CITY", "UNION");
+INSERT INTO county_district VALUES ("2019", "UNION TWP", "UNION");
+INSERT INTO county_district VALUES ("2020", "WESTFIELD TOWN", "UNION");
+INSERT INTO county_district VALUES ("2021", "WINFIELD TWP", "UNION");
+INSERT INTO county_district VALUES ("2101", "ALLAMUCHY TWP", "WARREN");
+INSERT INTO county_district VALUES ("2102", "ALPHA BORO", "WARREN");
+INSERT INTO county_district VALUES ("2103", "BELVIDERE TOWN", "WARREN");
+INSERT INTO county_district VALUES ("2104", "BLAIRSTOWN TWP", "WARREN");
+INSERT INTO county_district VALUES ("2105", "FRANKLIN TWP", "WARREN");
+INSERT INTO county_district VALUES ("2106", "FRELINGHUYSEN TWP", "WARREN");
+INSERT INTO county_district VALUES ("2107", "GREENWICH TWP", "WARREN");
+INSERT INTO county_district VALUES ("2108", "HACKETTSTOWN TOWN", "WARREN");
+INSERT INTO county_district VALUES ("2109", "HARDWICK TWP", "WARREN");
+INSERT INTO county_district VALUES ("2110", "HARMONY TWP", "WARREN");
+INSERT INTO county_district VALUES ("2111", "HOPE TWP", "WARREN");
+INSERT INTO county_district VALUES ("2112", "INDEPENDENCE TWP", "WARREN");
+INSERT INTO county_district VALUES ("2113", "KNOWLTON TWP", "WARREN");
+INSERT INTO county_district VALUES ("2114", "LIBERTY TWP", "WARREN");
+INSERT INTO county_district VALUES ("2115", "LOPATCONG TWP", "WARREN");
+INSERT INTO county_district VALUES ("2116", "MANSFIELD TWP", "WARREN");
+INSERT INTO county_district VALUES ("2117", "OXFORD TWP", "WARREN");
+INSERT INTO county_district VALUES ("2119", "PHILLIPSBURG TOWN", "WARREN");
+INSERT INTO county_district VALUES ("2120", "POHATCONG TWP", "WARREN");
+INSERT INTO county_district VALUES ("2121", "WASHINGTON BORO", "WARREN");
+INSERT INTO county_district VALUES ("2122", "WASHINGTON TWP", "WARREN");
+INSERT INTO county_district VALUES ("2123", "WHITE TWP", "WARREN");
+
+COMMIT;
