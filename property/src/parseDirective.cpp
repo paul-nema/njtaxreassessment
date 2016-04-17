@@ -14,7 +14,8 @@
 
 #include <parseDirective.h>
 
-parseDirective::parseDirective( int fieldLevel, std::string &fieldName, std::string &picture, int fld, int start, int end, int length ) {
+parseDirective::parseDirective( commandLineArgs *cmdLnArgs, int fieldLevel, std::string &fieldName, std::string &picture,
+		int fld, int start, int end, int length ) {
 	this->fieldLevel_ = fieldLevel;
 	this->fieldName_ = fieldName;
 	this->picture_ = picture;
@@ -22,6 +23,7 @@ parseDirective::parseDirective( int fieldLevel, std::string &fieldName, std::str
 	this->start_ = start;
 	this->end_ = end;
 	this->length_ = length;
+	this->cmdLnArgs_ = cmdLnArgs;
 
 	int charStart = 0;
 
@@ -41,45 +43,11 @@ parseDirective::parseDirective( int fieldLevel, std::string &fieldName, std::str
 	this->fieldType_ = this->determineType( this->fieldName_ );
 }
 
-parseDirective::parseDirective() {
-	this->fieldLevel_ = 0;
-	this->fieldName_ = "";
-	this->picture_ = "";
-	this->fld_ = 0;
-	this->start_ = 0;
-	this->end_ = 0;
-	this->length_ = 0;
-	this->fieldType_ = PD::CHAR;
-}
-
-void parseDirective::fieldLevel( int fieldLevel ) {
-	this->fieldLevel_ = fieldLevel;
-}
-
-int parseDirective::fieldLevel() {
-	return( this->fieldLevel_ );
-}
-
-int parseDirective::length() {
-	return( this->length_ );
-}
-
-const std::string &parseDirective::fieldName() {
-	return( this->fieldName_ );
-}
-
-const std::string &parseDirective::picture() {
-	return( this->picture_ );
-}
-
-const std::string &parseDirective::data() {
-	return( this->data_ );
-}
 
 int parseDirective::parse( const std::string & line ) {
 	this->data_ = line.substr( this->start_ - 1, this->length_ );
 	this->trim( this->data_ );
-	this->escapeString( this->data_ );
+	this->data_ = this->escapeString( this->data_ );
 
 	if( this->fieldType_ == PD::DATE ) {
 		if( this->data_.length() != 6 || this->isZeros( this->data_ ) == true ) {
@@ -125,16 +93,26 @@ int parseDirective::parse( const std::string & line ) {
 	return( 0 );
 }
 
-void parseDirective::escapeString( std::string &str ) {
-	std::size_t pos = 0;
-	int numOfCharsToReplace = 1;
-	char charToInsert = '\'';  // back slash
+std::string parseDirective::escapeString( std::string &str ) {
+	std::string ttmp;
 
-	while( ( pos = str.find( '\'', pos ) ) != std::string::npos ) {
-		str.insert( pos, numOfCharsToReplace, charToInsert );
-		pos += 2;  // advance past the found '
+	for( auto const &ch: str ) {
+		if( ch == '\'' ) {
+			if( this->cmdLnArgs_->dbName() == this->cmdLnArgs_->sqlite3() ) {
+				ttmp += "''";
+			} else {
+				ttmp += "\\'";
+			}
+		} else if ( ch == '\\' ) {
+			ttmp += "\\\\";
+		} else {
+			ttmp += ch;
+		}
 	}
+
+	return( ttmp );
 }
+
 
 std::string &parseDirective::ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
@@ -179,9 +157,6 @@ PD::FieldType parseDirective::determineType( const std::string & field ) {
 	return PD::CHAR;
 }
 
-int parseDirective::fieldType() {
-	return( this->fieldType_ );
-}
 
 bool parseDirective::isNumber( const std::string & str ) {
     std::string::const_iterator it = str.begin();

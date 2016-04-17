@@ -1,4 +1,4 @@
-USE property;
+﻿USE property;
 
 DROP TABLE IF EXISTS building_description;
 
@@ -920,4 +920,3 @@ INSERT INTO county_district VALUES ("2121", "WASHINGTON BORO", "WARREN");
 INSERT INTO county_district VALUES ("2122", "WASHINGTON TWP", "WARREN");
 INSERT INTO county_district VALUES ("2123", "WHITE TWP", "WARREN");
 
-COMMIT;
