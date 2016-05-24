@@ -22,6 +22,7 @@ namespace PD {
 	};
 }
 
+
 // Class that has the parse directive for one field and holds the parsed data
 class parseDirective {
 public:
@@ -35,7 +36,7 @@ public:
 	const std::string &picture()	{ return( this->picture_ ); }
 
 	// parse the input line
-	int parse( const std::string &);
+	int parse( const std::string & );
 
 	// return the parsed data
 	const std::string &data()	{ return( this->data_ ); }
@@ -56,6 +57,8 @@ private:
 	std::string escapeString( std::string & );
 	std::string escapeStringSlash( std::string & );
 
+	void generateBuildingDescription( std::string );
+
 	int fieldLevel_;
 	int fld_;
 	int start_;
@@ -70,7 +73,6 @@ private:
 
 	commandLineArgs *cmdLnArgs_;
 };
-
 
 
 #endif /* INC_PARSEDIRECTIVE_H_ */

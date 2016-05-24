@@ -20,6 +20,7 @@ namespace OO {
 	};
 }
 
+
 class commandLineArgs {
 public:
 	commandLineArgs( int argc, char **argv );
@@ -57,6 +58,7 @@ private:
 	bool createFileFlat_ = false;
 	bool createFileSQL_ = false;
 	bool outputTbl_ = false;
+	bool useDiffOutputName_ = false;
 
 	int count_ = 1000;
 
@@ -71,7 +73,7 @@ private:
 	std::string dataFile_	= "";
 	std::string recordLayoutFile_	= "./recordLayout.txt";
 	std::string login_		= "property_user";
-	std::string password_	= "prop3rt7R3@ss";
+	std::string password_	= "first*1";
 	std::string dbName_	= "";
 
 	const std::string mysql_	= "mysql";

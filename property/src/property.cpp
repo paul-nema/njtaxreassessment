@@ -30,26 +30,46 @@ static int recordLength = 700;
 
 static bool inTransaction = false;
 
+
 // ODBC error handlers that prints all error messages
 void extract_error( SQLHANDLE handle, SQLSMALLINT type ) {
+	const int	bufSize = 256;
+	const int	stateSize = 10;
+
     SQLINTEGER	i = 0;
     SQLINTEGER	native;
-    SQLCHAR		state[ 10 ];
-    SQLCHAR		text[ 256 ];
-    SQLSMALLINT	len;
-    SQLRETURN	ret;
+    SQLCHAR		state[ stateSize ];
+    SQLCHAR		text[ bufSize ];
+    SQLSMALLINT	length;
+    SQLRETURN	returnCd = 0;
 
     do {
-        ret = SQLGetDiagRec( type, handle, ++i, (SQLCHAR*)state, &native, (SQLCHAR*)text, 256, &len );
-        // if ( SQL_SUCCEEDED( ret ) ) {
-        	std::cerr << "state: " << state << " Num: " << i << " native: " << native << " " << text << std::endl;
-        // }
+    	returnCd = SQLGetDiagRec( type, handle, ++i, (SQLCHAR*)state, &native, (SQLCHAR*)text, bufSize, &length );
 
-    } while( ret == SQL_SUCCESS );
+        std::cerr << "returnCd: " << returnCd << " state: " << state
+        		<< " Num: " << i << " native: " << native << " " << text << std::endl;
+
+    } while( returnCd == SQL_SUCCESS );
 }
 
 
-// Database connectoin
+// Execute no return type SQL statements
+int ExecSQL( SQLHDBC &hdbc, SQLHSTMT &hstmt, std::string sql ) {
+	int returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
+
+	if( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
+		extract_error( hstmt, SQL_HANDLE_STMT );
+
+		std::cerr << "\nSQL:\n\n" << sql << std::endl;
+
+		SQLDisconnect( hdbc );
+	}
+
+	return( returnCd );
+}
+
+
+// Database connection
 bool DBConnect( commandLineArgs &cmdLnArgs, SQLHENV &env, SQLHDBC &hdbc, SQLHSTMT &hstmt ) {
 
 	long	erg;     // result of functions
@@ -99,7 +119,7 @@ bool DBConnect( commandLineArgs &cmdLnArgs, SQLHENV &env, SQLHDBC &hdbc, SQLHSTM
 
 	// Allocate a statement handle
 	erg = SQLAllocHandle( SQL_HANDLE_STMT, hdbc, &hstmt );
-	if ( (erg != SQL_SUCCESS) && ( erg != SQL_SUCCESS_WITH_INFO ) )
+	if ( ( erg != SQL_SUCCESS ) && ( erg != SQL_SUCCESS_WITH_INFO ) )
 	{
 		std::cerr << "Failure in AllocStatement " << erg << std::endl;
 		extract_error( hdbc, SQL_HANDLE_DBC );
@@ -109,7 +129,7 @@ bool DBConnect( commandLineArgs &cmdLnArgs, SQLHENV &env, SQLHDBC &hdbc, SQLHSTM
 	    SQLFreeHandle( SQL_HANDLE_DBC, hdbc );
 		SQLFreeHandle( SQL_HANDLE_ENV, env );
 
-		exit(0);
+		std::exit(0);
 	}
 
 	return( true );
@@ -144,7 +164,7 @@ void getRecLayout( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec ) {
 
 		std::istringstream iss( line );
 
-		if (! (iss >> fieldLevel >> fieldName >> picture >> fld >> start >> end >> length ) ) {
+		if ( ! ( iss >> fieldLevel >> fieldName >> picture >> fld >> start >> end >> length ) ) {
 			continue;
 		}
 
@@ -168,9 +188,11 @@ void getRecLayout( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec ) {
 std::vector< std::string > generateTblIndexes() {
 	std::vector< std::string > indexes = {
 		"CREATE INDEX indx_COUNTY_DISTRICT ON property (COUNTY_DISTRICT);\n",
-		"CREATE INDEX indx_PROPERTY_LOCATION ON property (PROPERTY_LOCATION);\n",
+		"CREATE INDEX indx_STREET_ADDRESS ON property (STREET_ADDRESS);\n",
 		"CREATE INDEX indx_TRANSACTION_DATE_MMDDYY ON property (TRANSACTION_DATE_MMDDYY);\n",
-		"CREATE INDEX indx_OWNER_NAME ON property (OWNER_NAME);\n"
+		"CREATE INDEX indx_OWNER_NAME ON property (OWNER_NAME);\n",
+		"CREATE INDEX indx_DEED_DATE_MMDDYY ON property (DEED_DATE_MMDDYY);\n",
+		"CREATE INDEX indx_ZIP_CODE ON property (ZIP_CODE);\n"
 	};
 
 	return( indexes );
@@ -178,32 +200,36 @@ std::vector< std::string > generateTblIndexes() {
 
 
 // SQL to drop indexes from table: property
-std::vector< std::string > * dropIndexesSQL( commandLineArgs &cmdLnArgs ) {
+std::vector< std::string > dropIndexesSQL( commandLineArgs &cmdLnArgs ) {
 	std::vector< std::string > indexes = {
 		"indx_COUNTY_DISTRICT",
-		"indx_PROPERTY_LOCATION",
+		"indx_STREET_ADDRESS",
 		"indx_TRANSACTION_DATE_MMDDYY",
-		"indx_OWNER_NAME"
+		"indx_OWNER_NAME",
+		"indx_DEED_DATE_MMDDYY",
+		"indx_ZIP_CODE"
 	};
 
-	std::vector< std::string > * returnVec = new std::vector< std::string >();
+	//  Create vector to hold the actual SQL statements
+	std::vector< std::string > rtn( indexes.size() );
 
 	// Create statement for each database type
 	for( const auto &str: indexes ) {
-		std::string *sql = new std::string( "DROP INDEX " );
+		std::string sql;
 
 		if( cmdLnArgs.dbName() == cmdLnArgs.mysql() ) {
-			*sql += str + " ON property;\n";
+			sql += str + " ON property;\n";
 		} else if ( cmdLnArgs.dbName() == cmdLnArgs.sqlite3() ) {
-			*sql += "IF EXISTS " + str + ";\n";
+			sql += "IF EXISTS " + str + ";\n";
 		} else {
-			*sql += "IF EXISTS " + str + " ON property;\n";
+			sql += "IF EXISTS " + str + " ON property;\n";
 		}
 
-		returnVec->push_back( *sql );
+		rtn.push_back( sql );
+		sql.erase();
 	}
 
-	return( returnVec );
+	return( rtn );
 }
 
 
@@ -211,30 +237,14 @@ std::vector< std::string > * dropIndexesSQL( commandLineArgs &cmdLnArgs ) {
 void dropIndexes( commandLineArgs &cmdLnArgs, SQLHENV &env, SQLHDBC &hdbc, SQLHSTMT &hstmt ) {
 	int returnCd = 0;
 
-	std::vector< std::string > * drops = dropIndexesSQL( cmdLnArgs );
+	// std::vector< std::string > * drops = dropIndexesSQL( cmdLnArgs );
 
-	for( const auto &sql: *drops ) {
-		returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
-
-		if( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
+	for( const auto &sql: dropIndexesSQL( cmdLnArgs ) ) {
+		if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 			std::cerr << "dropIndexes: SQL Drop Indexes error:" << std::endl;
-
-			extract_error( hstmt, SQL_HANDLE_STMT );
-
-			std::cerr << "\nSQL:\n\n" << sql << std::endl;
-
-			SQLDisconnect( hdbc );
-
-			exit( returnCd );
+			std::exit( returnCd );
 		}
 	}
-
-	// Delete all new memory
-	std::vector< std::string > vec;
-	drops->swap( vec );
-
-	delete drops;
-
 }
 
 
@@ -245,15 +255,9 @@ void generateTblSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::
 
 	// For MySQL choose the correct D: property
 	if( cmdLnArgs.dbName() == cmdLnArgs.mysql() ) {
-		returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
-		if ((returnCd == SQL_SUCCESS_WITH_INFO) || (returnCd == SQL_ERROR)) {
+		if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 			std::cerr << "generateTblSQL: USE property: " << std::endl;
-
-			extract_error( hstmt, SQL_HANDLE_STMT );
-
-			SQLDisconnect( hdbc );
-
-			exit( returnCd );
+			std::exit( returnCd );
 		}
 	}
 
@@ -261,15 +265,9 @@ void generateTblSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::
 	if( cmdLnArgs.dropTable() ) {
 		std::string drop = "DROP TABLE IF EXISTS property;";
 
-		returnCd = SQLExecDirect( hstmt, (SQLCHAR*)drop.c_str(), drop.length() );
-		if ((returnCd == SQL_SUCCESS_WITH_INFO) || (returnCd == SQL_ERROR)) {
+		if( ( returnCd = ExecSQL( hdbc, hstmt, drop ) ) != 0 ) {
 			std::cerr << "generateTblSQL: SQL DROP TABLE error:" << std::endl;
-
-			extract_error( hstmt, SQL_HANDLE_STMT );
-
-			SQLDisconnect( hdbc );
-
-			exit( returnCd );
+			std::exit( returnCd );
 		}
 	}
 
@@ -299,26 +297,26 @@ void generateTblSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::
 			lineOut << "\tCHAR(" << pdVec[ cnt ].length() << ")";
 		}
 
-		if( cnt != ( pdVec.size() - 1 ) ) {
-			lineOut << ",\n";
-		} else {
-			lineOut << "\n";
-		}
+		lineOut << ",\n";
 
 		sql += lineOut.str();
 		lineOut.str( "" );	// Clear the sstream
 	}
 
-	sql += ");\n";
+	sql += "\tLAT\tFLOAT NOT NULL DEFAULT 0,\n";
+	sql += "\tLNG\tFLOAT NOT NULL DEFAULT 0";
+	sql += "\n);\n";
 
 	// Output table DDL to standard out then ewe're done
 	if( cmdLnArgs.genPropertyTable() ) {
-		for( const auto &sql: *dropIndexesSQL( cmdLnArgs ) ) {
-			std::cout << sql << "\n";
+		std::cout << sql << std::endl;
+
+		for( const auto &sql: dropIndexesSQL( cmdLnArgs ) ) {
+			std::cout << sql;
 		}
 
-		for( const auto &str: generateTblIndexes() ) {
-			std::cout << str;
+		for( const auto &sql: generateTblIndexes() ) {
+			std::cout << sql;
 		}
 
 		std::cout << std::endl;
@@ -331,17 +329,9 @@ void generateTblSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::
 
 	// Create the table in the DB
 	if( cmdLnArgs.dropTable() ) {
-		returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
-		if ( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
+		if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 			std::cerr << "generateTblSQL: SQL CREATE TABLE error:" << std::endl;
-
-			extract_error( hstmt, SQL_HANDLE_STMT );
-
-			std::cerr << "\nSQL:\n\n" << sql << std::endl;
-
-			SQLDisconnect( hdbc );
-
-			exit( returnCd );
+			std::exit( returnCd );
 		}
 	}
 }
@@ -381,18 +371,11 @@ void generateSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::ofs
 	std::string sql = columns + values;
 
 	if( cmdLnArgs.useDB() ) {
-		int returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
+		int returnCd = 0;
 
-		if ( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
+		if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 			std::cerr << "generateSQL: SQL INSERT error:" << std::endl;
-
-			extract_error( hstmt, SQL_HANDLE_STMT );
-
-			std::cerr << "\nSQL:\n\n" << sql << std::endl;
-
-			SQLDisconnect( hdbc );
-
-			exit( returnCd );
+			std::exit( returnCd );
 		}
 	}
 }
@@ -420,11 +403,13 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 
 	std::ifstream dataFile( cmdLnArgs.dataFile().c_str() );
 
+	// Open input data file
 	if( ! dataFile.is_open() ) {
 		std::cerr << "Unable to open file: " << cmdLnArgs.dataFile() << std::endl;
-		exit( 1 );
+		std::exit( 1 );
 	}
 
+	// Open output file if writing to a file
 	if( cmdLnArgs.createFile() ) {
 		outFile.open( cmdLnArgs.outputFile().c_str(), std::ios::out );
 
@@ -442,23 +427,52 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 	int len = 0;
 
 	while( getline( dataFile, line ) ) {
+		// Ensure record is the correct length. Account for extra DOS characters too
 		if( ( len = line.length() ) != recordLength ) {
+
+			// Record NOT the correct length. Determine if bad length due to DOS \r character
 			if( ( len == recordLength + 1 ) && line[ recordLength ] == '\r' ) {
-				line.erase( std::remove(line.begin(), line.end(), '\r' ), line.end() );
+				line.erase( line.length() - 2 ); // Get rid of '\r'
 			} else {
 				std::cout << "UNKNOWN Line.  Doens't match correct length of 700:\nLength = "
 						<< len << "\n" << line << "\n";
-				exit(1);
+				std::exit(1);
 			}
 		}
+
+		bool dropRecord = false;
 
 		// Parse line according to the parse directive
 		for( unsigned cnt = 0; cnt < pdVec.size(); cnt++ ) {
 			pdVec[ cnt ].parse( line );
+
+			// If this is not property_class == 2 (Residential) then do not keep
+			if ( pdVec[ cnt ].fieldType() == PD::CHAR && pdVec[ cnt ].fieldName() == "PROPERTY_CLASS" ) {
+				if ( pdVec[ cnt ].data() != "2" ) {
+					dropRecord = true;
+
+					break;
+				}
+			}
 		}
 
+		// Found a non-residential property. Drop it.
+		if ( dropRecord == true ) {
+			dropRecord = false;
+
+			continue;
+		}
+
+		// Write to fileflat if required
 		if ( cmdLnArgs.genFileFlat() ) {
 			generateFileFlat( cmdLnArgs, pdVec, outFile );
+
+			continue;
+		}
+
+		// write to filesql if required
+		if ( cmdLnArgs.genFileSQL() ) {
+			generateSQL( cmdLnArgs, pdVec, outFile, env, hdbc, hstmt );
 
 			continue;
 		}
@@ -466,15 +480,9 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 		// If using the database, CREATE Table at commitCnt == 0 then
 		//	BEGIN TRANSACTION at the next iteration commitCnt == 1
 		if( commitCnt == 1 && cmdLnArgs.useDB() ) {
-			returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sqlBegin.c_str(), sqlBegin.length() );
-			if ( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
-				std::cerr << "getData: " << sqlBegin << std::endl;
-
-				extract_error( hstmt, SQL_HANDLE_STMT );
-
-				SQLDisconnect( hdbc );
-
-				exit( returnCd );
+			if( ( returnCd = ExecSQL( hdbc, hstmt, sqlBegin ) ) != 0 ) {
+				std::cerr << "getData: Begin Transaction " << std::endl;
+				std::exit( returnCd );
 			}
 
 			::inTransaction = true;
@@ -486,15 +494,9 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 
 		//  Exec the END TRANSACTION at cmdLnArgs->commitCount()
 		if( commitCnt++ == cmdLnArgs.commitCount() && cmdLnArgs.useDB() ) {
-			returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sqlEnd.c_str(), sqlEnd.length() );
-			if ( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
-				std::cerr << "getData: " << sqlEnd << std::endl;
-
-				extract_error( hstmt, SQL_HANDLE_STMT );
-
-				SQLDisconnect( hdbc );
-
-				exit( returnCd );
+			if( ( returnCd = ExecSQL( hdbc, hstmt, sqlEnd ) ) != 0 ) {
+				std::cerr << "getData: END Transcation " << std::endl;
+				std::exit( returnCd );
 			}
 
 			commitCnt = 0;	// restart counter
@@ -530,20 +532,20 @@ int main( int argc, char **argv ) {
 	if( cmdLnArgs.useDB() ) {
 		if( DBConnect( cmdLnArgs, env, hdbc, hstmt ) == false ) {
 			std::cerr << "Unable to open database: " << cmdLnArgs.dbFile() << std::endl;
-			exit( 1 );
+			std::exit( 1 );
 		}
 	}
 
 	// generate parsing rules
 	getRecLayout( cmdLnArgs, pdVec );
 
-	// give property table DDL if requested then exit
+	// give property table DDL if requested then std::exit
 	if( cmdLnArgs.genPropertyTable() == true ) {
 		std::ofstream dummy;
 
 		generateTblSQL( cmdLnArgs, pdVec, dummy, env, hdbc, hstmt );
 
-		exit( 0 );
+		std::exit( 0 );
 	}
 
 	getData( cmdLnArgs, pdVec, env, hdbc, hstmt );
@@ -552,40 +554,22 @@ int main( int argc, char **argv ) {
 		std::string sql = "COMMIT;";
 
 		if( ::inTransaction == true ) {
-			returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
-
-			if ( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
+			if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 				std::cerr << "main: SQL COMMIT error:" << std::endl;
-
-				extract_error( hstmt, SQL_HANDLE_STMT );
-
-				std::cerr << "\nSQL:\n\n" << sql << std::endl;
-
-				SQLDisconnect( hdbc );
-
-				exit( returnCd );
+				std::exit( returnCd );
 			}
 		}
 
 		// Recreate indexes
 		for( const auto &sql: generateTblIndexes() ) {
-			returnCd = SQLExecDirect( hstmt, (SQLCHAR*)sql.c_str(), sql.length() );
-
-			if ( ( returnCd == SQL_SUCCESS_WITH_INFO ) || ( returnCd == SQL_ERROR ) ) {
+			if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 				std::cerr << "main: SQL CREATE INDEX error:" << std::endl;
-
-				extract_error( hstmt, SQL_HANDLE_STMT );
-
-				std::cerr << "\nSQL:\n\n" << sql << std::endl;
-
-				SQLDisconnect( hdbc );
-
-				exit( returnCd );
+				std::exit( returnCd );
 			}
 		}
 
 		SQLDisconnect( hdbc );
 	}
 
-	exit( 0 );
+	std::exit( 0 );
 }

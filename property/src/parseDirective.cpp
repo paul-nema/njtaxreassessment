@@ -11,11 +11,17 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <regex>
+#include <sstream>
+#include <boost/regex.hpp>
+
 
 #include <parseDirective.h>
 
+
 parseDirective::parseDirective( commandLineArgs *cmdLnArgs, int fieldLevel, std::string &fieldName, std::string &picture,
 		int fld, int start, int end, int length ) {
+
 	this->fieldLevel_ = fieldLevel;
 	this->fieldName_ = fieldName;
 	this->picture_ = picture;
@@ -41,6 +47,177 @@ parseDirective::parseDirective( commandLineArgs *cmdLnArgs, int fieldLevel, std:
 	std::replace( this->fieldName_.begin(), this->fieldName_.end(), '-', '_' );
 
 	this->fieldType_ = this->determineType( this->fieldName_ );
+}
+
+
+bool returnMatch( const std::string & str, const boost::regex & re ) {
+	try {
+		if ( boost::regex_match( str, re ) ) {
+			return( true );
+		} else {
+			return( false );
+		}
+	} catch (std::regex_error& e) {
+		// Syntax error in the regular expression
+		std::cerr << "ERROR Syntax error in the regular expression for match on Building Description\nData = "
+				<< str
+				<< "\nREGEX = "
+				<< re
+				<< std::endl;
+
+		std::exit( 1 );
+	}
+
+	return( false );
+}
+
+
+std::string returnSearch( const std::string & str, const boost::regex & re ) {
+	boost::smatch match;
+
+	try {
+		if ( boost::regex_search( str, match, re ) ) {
+			return( match.str(1) );
+		} else {
+			return( "" );
+		}
+	} catch (std::regex_error& e) {
+		// Syntax error in the regular expression
+		std::cerr << "ERROR Syntax error in the regular expression\nData = "
+				<< str
+				<< "\nREGEX = "
+				<< re
+				<< std::endl;
+
+		std::exit( 1 );
+	}
+
+	return( "" );
+}
+
+
+// remove above string
+void removeStr( std::string & str, const std::string & match ) {
+	std::string::size_type i = str.find( match );
+
+	if ( i != std::string::npos ) {
+		str.erase( i, match.length() );
+	}
+}
+
+
+/*
+# 10. BUILDING DESCRIPTION: (O)
+# Codes describe the physical characteristics of the property. The information should be listed in the
+# following order: stories, exterior structural material, style, number of stalls and type of garage.
+#   STORIES
+#       S Prefix S with the number of stories.
+#   STRUCTURE:
+#       AL Aluminum siding
+#       B Brick
+#       CB Concrete Block
+#       F Frame
+#       M Metal
+#       RC Reinforced concrete
+#       S Stucco
+#       SS Structured Steel
+#       ST Stone
+#       W Wood
+#   STYLE:
+#       A Commercial
+#       B Industrial
+#       C Apartments
+#       D Dutch Colonial
+#       E English Tudor
+#       L Colonial
+#       M Mobile Home
+#       R Rancher
+#       S Split Level
+#       T Twin
+#       W Row Home
+#       X Duplex
+#       Z Raised Rancher
+#       O Other
+#       2 Bi-Level
+#       3 Tri-Level
+#   GARAGE:
+#       G Garage (My comment based upon a data review`)
+#       AG Attached Garage
+#       UG Unattached Garage
+#       (Note: number of cars is a prefixed to code)
+*/
+void parseDirective::generateBuildingDescription( std::string str ) {
+	std::string stories = "";
+	std::string word = "";
+
+	boost::regex pattern( "(\\d\\.\\d|\\d)S" );
+
+	// number of STORIES
+	if ( ( word = returnSearch( str, pattern ) ) != "" ) {
+		stories = word + "S";
+
+		removeStr( str, word );	// remove the previously found str
+	} else {
+		stories = "1S";
+	}
+
+	// Search for GARAGE tokens
+	std::string searchTokens = "AG G UG";
+	std::string garage = "";
+
+	std::istringstream iss1( searchTokens, std::istringstream::in );
+
+	while( iss1 >> word ) {
+		pattern = word;
+
+		if( returnMatch( str, pattern ) ) {
+			garage = word;
+
+			removeStr( str, word );	// remove the previously found str
+
+			break; // Assumption there is only ONE garage token
+		}
+	}
+
+
+	// Search for STRUCTURE tokens
+	searchTokens = "AL B CB F M RC SS S ST W";
+	std::string structure = "";
+
+	std::istringstream iss2( searchTokens, std::istringstream::in );
+
+	while( iss2 >> word ) {
+		pattern = word;
+
+		if( returnMatch( str, pattern ) ) {
+			structure = word;
+
+			removeStr( str, word );	// remove the previously found str
+
+			break; // Assumption there is only ONE structure token
+		}
+	}
+
+
+	// Search for STYLE tokens
+	searchTokens = "A B C D E L M R S T W X Z 2 3";
+	std::string style = "";
+
+	std::istringstream iss3( searchTokens, std::istringstream::in );
+
+	while( iss3 >> word ) {
+		pattern = word;
+
+		if( returnMatch( str, pattern ) ) {
+			style = word;
+
+			removeStr( str, word );	// remove the previously found str
+
+			break; // Assumption there is only ONE structure token
+		}
+	}
+
+	this->data_ = stories + "-" + structure + "-" + style + "-" + garage;
 }
 
 
@@ -90,8 +267,17 @@ int parseDirective::parse( const std::string & line ) {
 		this->data_ = YY + "-" + MM + "-" + DD;
 	}
 
+	if( this->fieldType_ == PD::CHAR && this->fieldName_ == "BUILDING_DESCRIPTION" ) {
+		if( this->data_.length() == 0 ) {
+			return( 0 );
+		}
+
+		generateBuildingDescription( this->data_ );
+	}
+
 	return( 0 );
 }
+
 
 std::string parseDirective::escapeString( std::string &str ) {
 	std::string ttmp;
@@ -125,17 +311,19 @@ std::string &parseDirective::rtrim(std::string &s) {
         return s;
 }
 
+
 // trim from both ends
 std::string &parseDirective::trim( std::string &s ) {
         return this->ltrim(this->rtrim(s));
 }
+
 
 PD::FieldType parseDirective::determineType( const std::string & field ) {
 	if( field.find( "_DATE_" ) != std::string::npos || field.find( "_DATE" ) != std::string::npos ) {
 		return PD::DATE;
 	}
 
-	if( field.find( "NUMBER" ) != std::string::npos ) {
+	if( field.find( "NUMBER" ) != std::string::npos || field.find( "CALCULATED" ) != std::string::npos ) {
 		if( field.find( "TAX_ACCOUNT_NUMBER" ) != std::string::npos ) {
 			return PD::CHAR;
 		}
@@ -165,6 +353,7 @@ bool parseDirective::isNumber( const std::string & str ) {
     	++it;
     return( !str.empty() && it == str.end() );
 }
+
 
 bool parseDirective::isZeros( const std::string & str ) {
     std::string::const_iterator it = str.begin();

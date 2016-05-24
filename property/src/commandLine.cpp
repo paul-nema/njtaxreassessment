@@ -16,7 +16,7 @@ commandLineArgs::commandLineArgs( int argc, char **argv ) {
 	char* p;
 	long converted = 0;
 
-	while ( ( opt = getopt( argc, argv, "r:i:o:u:p:d:n:tcz?" ) ) != -1 ) {
+	while ( ( opt = getopt( argc, argv, "r:i:o:f:u:p:d:n:tcz?" ) ) != -1 ) {
 		switch ( opt ) {
 			case '?':
 			case 'h':
@@ -52,6 +52,11 @@ commandLineArgs::commandLineArgs( int argc, char **argv ) {
 				}
 
 				this->output_ = optarg;
+
+				break;
+			case 'f':
+				this->output_ = optarg;
+				this->useDiffOutputName_ = true;
 
 				break;
 			case 'p':
@@ -106,11 +111,19 @@ commandLineArgs::commandLineArgs( int argc, char **argv ) {
 		exit( 1 );
 	}
 
-	if( this->delimiter_ != '\t' && ( this->output_ != this->fileflat_ && this->output_ != this->filesql_ ) ) {
+	if ( this->delimiter_ != '\t' && ( this->output_ != this->fileflat_ && this->output_ != this->filesql_ ) ) {
 		std::cerr << "Command line argument error\n"
 			"\tCannot use option -d without using a -o option of [fileflat|filesql]\n\n";
 		this->usage( argv[0] );
 		exit( 1 );
+	}
+
+	if ( this->useDiffOutputName_ == false) {
+		if ( this->createFileFlat_ == true ) {
+			this->output_ = this->fileFlatName_;
+		} else {
+			this->output_ = this->fileSQLName_;
+		}
 	}
 }
 
@@ -120,9 +133,11 @@ void commandLineArgs::usage( char *programName ) {
 		"\t-r recordLayoutFile (default filename is ./recordLayout.txt)\n"
 		"\t-i inputDataFile (example ./Bergen15.txt)\n"
 		"\t-o [mysql|postgres|sqlite3|fileflat|filesql] choose output form\n"
-			"\t\tflatfile uses default delimiter of TAB\n"
-			"\t\tflatsql creates INSERT SQL statements\n"
+			"\t\tflatfile default filename: " << this->fileFlatName_ << "\n"
+			"\t\tflatsql creates INSERT SQL statements: default filename: " << this->fileSQLName_ << "\n"
+		"\t-f fileName (output file name for options -o fileflat or -o fileSQL if default not used)\n"
 		"\t-d delimiter (if -o is flatfile change default to 'delimiter'. Must be one character)\n"
+			"\t\tdefault delimiter is TAB\n"
 		"\t-l databaseLogin\n"
 		"\t-p databasePassword\n"
 		"\t-c before inserting data into table: property, DROP (if exist) it then re-CREATE table property\n"
