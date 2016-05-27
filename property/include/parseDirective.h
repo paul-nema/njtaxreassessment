@@ -18,7 +18,8 @@ namespace PD {
 		CHAR,
 		DATE,
 		NUMBER,
-		MONEY
+		MONEY,
+		FLOAT
 	};
 }
 
@@ -29,20 +30,15 @@ public:
 	parseDirective( commandLineArgs *, int, std::string &, std::string &, int , int , int , int  );
 
 	void fieldLevel( int fieldLevel )	{ this->fieldLevel_ = fieldLevel; }
-	int fieldLevel()	{ return( this->fieldLevel_ ); }
+	void generateBuildingDescription( std::string );
 
 	const std::string &fieldName() { return( this->fieldName_ ); }
-
 	const std::string &picture()	{ return( this->picture_ ); }
+	const std::string &data()	{ return( this->data_ ); }	// return the parsed data
 
-	// parse the input line
-	int parse( const std::string & );
-
-	// return the parsed data
-	const std::string &data()	{ return( this->data_ ); }
-
+	int parse( const std::string & );	// parse the input line
+	int fieldLevel()	{ return( this->fieldLevel_ ); }
 	int length()	{ return( this->length_ ); }
-
 	int fieldType()	{ return( this->fieldType_ ); }
 
 	PD::FieldType determineType( const std::string & );
@@ -56,8 +52,6 @@ private:
 	std::string & trim( std::string & );
 	std::string escapeString( std::string & );
 	std::string escapeStringSlash( std::string & );
-
-	void generateBuildingDescription( std::string );
 
 	int fieldLevel_;
 	int fld_;

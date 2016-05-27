@@ -30,6 +30,9 @@ static int recordLength = 700;
 
 static bool inTransaction = false;
 
+const std::string bldgDesc = "BLDG_DESC";
+const std::string bldgDescLong = "BUILDING_DESCRIPTION";
+
 
 // ODBC error handlers that prints all error messages
 void extract_error( SQLHANDLE handle, SQLSMALLINT type ) {
@@ -136,10 +139,24 @@ bool DBConnect( commandLineArgs &cmdLnArgs, SQLHENV &env, SQLHDBC &hdbc, SQLHSTM
 }
 
 
+void createParseDirective( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, int fieldLevel,
+		std::string &fieldName, std::string &picture, int fld,
+		int start, int end, int length ) {
+
+	// Create new parse objective object
+	parseDirective *pD = new parseDirective( &cmdLnArgs, fieldLevel, fieldName, picture, fld, start, end, length );
+	if ( pD == NULL ) {
+		std::cerr << "Memory error in function createParseDirective\n";
+		exit( 2 );
+	}
+
+	// Add the new object to the vector
+	pdVec.push_back( *pD );
+}
+
+
 // Create parse directive objects.
 void getRecLayout( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec ) {
-	parseDirective *pD;
-
 	int fieldLevel;
 	int fld;
 	int start;
@@ -174,11 +191,25 @@ void getRecLayout( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec ) {
 		}
 
 		// Create new parse objective object
-		pD = new parseDirective( &cmdLnArgs, fieldLevel, fieldName, picture, fld, start, end, length );
-
-		// Add the new object to the vector
-		pdVec.push_back( *pD );
+		createParseDirective( cmdLnArgs, pdVec, fieldLevel, fieldName, picture, fld, start, end, length );
 	}
+
+	// Create parseDirective objects for fields not in the record layout
+	// First field is BLDG_DESC which is massaged data from BUILDING_DESCRIPTION
+	fieldName = bldgDesc;
+	picture = "X(15)";
+
+	createParseDirective( cmdLnArgs, pdVec, 5, fieldName, picture, 0, 1, 15, 15 );
+
+	fieldName = "LONGITUDE";
+	picture = "X(10)";
+
+	createParseDirective( cmdLnArgs, pdVec, 5, fieldName, picture, 0, 1, 10, 10 );
+
+	fieldName = "LATITUDE";
+	picture = "X(10)";
+
+	createParseDirective( cmdLnArgs, pdVec, 5, fieldName, picture, 0, 1, 10, 10 );
 
 	recordLayout.close();
 }
@@ -237,8 +268,6 @@ std::vector< std::string > dropIndexesSQL( commandLineArgs &cmdLnArgs ) {
 void dropIndexes( commandLineArgs &cmdLnArgs, SQLHENV &env, SQLHDBC &hdbc, SQLHSTMT &hstmt ) {
 	int returnCd = 0;
 
-	// std::vector< std::string > * drops = dropIndexesSQL( cmdLnArgs );
-
 	for( const auto &sql: dropIndexesSQL( cmdLnArgs ) ) {
 		if( ( returnCd = ExecSQL( hdbc, hstmt, sql ) ) != 0 ) {
 			std::cerr << "dropIndexes: SQL Drop Indexes error:" << std::endl;
@@ -282,19 +311,23 @@ void generateTblSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::
 
 		switch( pdVec[ cnt ].fieldType() ) {
 		case PD::DATE:
-			lineOut << "\tDATE";
+			lineOut << "\t DATE";
 			break;
 
 		case PD::NUMBER:
-			lineOut << "\tINTEGER";
+			lineOut << "\t INTEGER";
 			break;
 
 		case PD::MONEY:
-			lineOut << "\tREAL";
+			lineOut << "\t REAL";
+			break;
+
+		case PD::FLOAT:
+			lineOut << "\t FLOAT";
 			break;
 
 		default:	// CHAR
-			lineOut << "\tCHAR(" << pdVec[ cnt ].length() << ")";
+			lineOut << "\t CHAR(" << pdVec[ cnt ].length() << ")";
 		}
 
 		lineOut << ",\n";
@@ -303,9 +336,9 @@ void generateTblSQL( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, std::
 		lineOut.str( "" );	// Clear the sstream
 	}
 
-	sql += "\tLAT\tFLOAT NOT NULL DEFAULT 0,\n";
-	sql += "\tLNG\tFLOAT NOT NULL DEFAULT 0";
-	sql += "\n);\n";
+	sql.pop_back();	// Remove the last comma. First remove the \n, then comma
+	sql.pop_back();	// remove comma here
+	sql += "\n);\n";	// close out the create table DDL definition
 
 	// Output table DDL to standard out then ewe're done
 	if( cmdLnArgs.genPropertyTable() ) {
@@ -426,6 +459,8 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 
 	int len = 0;
 
+	parseDirective *pd = NULL;
+
 	while( getline( dataFile, line ) ) {
 		// Ensure record is the correct length. Account for extra DOS characters too
 		if( ( len = line.length() ) != recordLength ) {
@@ -444,15 +479,32 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 
 		// Parse line according to the parse directive
 		for( unsigned cnt = 0; cnt < pdVec.size(); cnt++ ) {
-			pdVec[ cnt ].parse( line );
+			pd = & pdVec[ cnt ];	// Use pointer for efficiency (avoid many array de-references
+			pd->parse( line );	// Pass data to parseDirective object for parsing
 
 			// If this is not property_class == 2 (Residential) then do not keep
-			if ( pdVec[ cnt ].fieldType() == PD::CHAR && pdVec[ cnt ].fieldName() == "PROPERTY_CLASS" ) {
-				if ( pdVec[ cnt ].data() != "2" ) {
+			if ( pd->fieldType() == PD::CHAR && pd->fieldName() == "PROPERTY_CLASS" ) {
+				if ( pd->data() != "2" ) {
 					dropRecord = true;
 
 					break;
 				}
+			}
+
+			// Handle special cases of parseDirective, like BLDG_DESC
+			if ( pd->fieldName() == bldgDesc ) {
+
+				// Get the data for BLDG_DESC from BUILDING_DESCRIPTION
+				for( unsigned x = 0; cnt < pdVec.size(); x++ ) {
+					if( pdVec[ x ].fieldName() == bldgDescLong ) {
+						std::string data = pdVec[ x ].data();
+
+						pd->generateBuildingDescription( data );
+
+						break;
+					}
+				}
+
 			}
 		}
 
@@ -495,7 +547,7 @@ void getData( commandLineArgs &cmdLnArgs, parseDirectiveVec &pdVec, SQLHENV	&env
 		//  Exec the END TRANSACTION at cmdLnArgs->commitCount()
 		if( commitCnt++ == cmdLnArgs.commitCount() && cmdLnArgs.useDB() ) {
 			if( ( returnCd = ExecSQL( hdbc, hstmt, sqlEnd ) ) != 0 ) {
-				std::cerr << "getData: END Transcation " << std::endl;
+				std::cerr << "getData: END Transaction " << std::endl;
 				std::exit( returnCd );
 			}
 
@@ -517,16 +569,14 @@ int main( int argc, char **argv ) {
 
 	SQLHENV		env = SQL_NULL_HENV;     // Handle ODBC environment
 
-	SQLHDBC		hdbc = SQL_NULL_HDBC;    // Handle connection
+	SQLHDBC		hdbc = SQL_NULL_HDBC;    // Connection Handle
 
 	SQLHSTMT	hstmt = SQL_NULL_HSTMT;
 
 	parseDirectiveVec pdVec;
 
 
-	// START the program!
-	// Get the command line arguments
-	commandLineArgs cmdLnArgs( argc, argv );
+	commandLineArgs cmdLnArgs( argc, argv );	// Get the command line arguments
 
 	// Open the database connection
 	if( cmdLnArgs.useDB() ) {
@@ -536,10 +586,9 @@ int main( int argc, char **argv ) {
 		}
 	}
 
-	// generate parsing rules
-	getRecLayout( cmdLnArgs, pdVec );
+	getRecLayout( cmdLnArgs, pdVec );	// generate parsing rules
 
-	// give property table DDL if requested then std::exit
+	// give property table DDL if requested then exit
 	if( cmdLnArgs.genPropertyTable() == true ) {
 		std::ofstream dummy;
 
@@ -548,7 +597,7 @@ int main( int argc, char **argv ) {
 		std::exit( 0 );
 	}
 
-	getData( cmdLnArgs, pdVec, env, hdbc, hstmt );
+	getData( cmdLnArgs, pdVec, env, hdbc, hstmt );	// process the input data file
 
 	if( cmdLnArgs.useDB() ) {
 		std::string sql = "COMMIT;";

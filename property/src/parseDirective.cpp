@@ -13,8 +13,8 @@
 #include <locale>
 #include <regex>
 #include <sstream>
+#include <vector>
 #include <boost/regex.hpp>
-
 
 #include <parseDirective.h>
 
@@ -43,7 +43,7 @@ parseDirective::parseDirective( commandLineArgs *cmdLnArgs, int fieldLevel, std:
 		this->fieldName_.erase( charStart, 1 );
 	}
 
-	// replace - to _ as DB doesn't like '-' in a field name
+	// replace - to _ as some DBs doesn't like '-' in a field name
 	std::replace( this->fieldName_.begin(), this->fieldName_.end(), '-', '_' );
 
 	this->fieldType_ = this->determineType( this->fieldName_ );
@@ -147,8 +147,17 @@ void removeStr( std::string & str, const std::string & match ) {
 #       (Note: number of cars is a prefixed to code)
 */
 void parseDirective::generateBuildingDescription( std::string str ) {
+	if( str.length() == 0 ) {
+		this->data_ = "";
+
+		return;
+	}
+
 	std::string stories = "";
 	std::string word = "";
+	std::string garage = "";
+	std::string structure = "";
+	std::string style = "";
 
 	boost::regex pattern( "(\\d\\.\\d|\\d)S" );
 
@@ -156,24 +165,35 @@ void parseDirective::generateBuildingDescription( std::string str ) {
 	if ( ( word = returnSearch( str, pattern ) ) != "" ) {
 		stories = word + "S";
 
-		removeStr( str, word );	// remove the previously found str
+		removeStr( str, stories );	// remove the previously found str
 	} else {
 		stories = "1S";
 	}
 
+	if( str.length() == 0 ) {
+		this->data_ = stories + "-" + structure + "-" + style + "-" + garage;
+
+		return;
+	}
+
 	// Search for GARAGE tokens
-	std::string searchTokens = "AG G UG";
-	std::string garage = "";
+	std::string searchTokens = "(AG) (\\d?G) (UG)";
 
 	std::istringstream iss1( searchTokens, std::istringstream::in );
 
 	while( iss1 >> word ) {
 		pattern = word;
 
-		if( returnMatch( str, pattern ) ) {
+		if( ( word = returnSearch( str, pattern ) ) != "" ) {
 			garage = word;
 
 			removeStr( str, word );	// remove the previously found str
+
+			if( str.length() == 0 ) {
+				this->data_ = stories + "-" + structure + "-" + style + "-" + garage;
+
+				return;
+			}
 
 			break; // Assumption there is only ONE garage token
 		}
@@ -182,7 +202,6 @@ void parseDirective::generateBuildingDescription( std::string str ) {
 
 	// Search for STRUCTURE tokens
 	searchTokens = "AL B CB F M RC SS S ST W";
-	std::string structure = "";
 
 	std::istringstream iss2( searchTokens, std::istringstream::in );
 
@@ -192,7 +211,13 @@ void parseDirective::generateBuildingDescription( std::string str ) {
 		if( returnMatch( str, pattern ) ) {
 			structure = word;
 
-			removeStr( str, word );	// remove the previously found str
+			removeStr( str, structure );	// remove the previously found str
+
+			if( str.length() == 0 ) {
+				this->data_ = stories + "-" + structure + "-" + style + "-" + garage;
+
+				return;
+			}
 
 			break; // Assumption there is only ONE structure token
 		}
@@ -201,7 +226,6 @@ void parseDirective::generateBuildingDescription( std::string str ) {
 
 	// Search for STYLE tokens
 	searchTokens = "A B C D E L M R S T W X Z 2 3";
-	std::string style = "";
 
 	std::istringstream iss3( searchTokens, std::istringstream::in );
 
@@ -211,7 +235,7 @@ void parseDirective::generateBuildingDescription( std::string str ) {
 		if( returnMatch( str, pattern ) ) {
 			style = word;
 
-			removeStr( str, word );	// remove the previously found str
+			removeStr( str, style );	// remove the previously found str
 
 			break; // Assumption there is only ONE structure token
 		}
@@ -225,6 +249,13 @@ int parseDirective::parse( const std::string & line ) {
 	this->data_ = line.substr( this->start_ - 1, this->length_ );
 	this->trim( this->data_ );
 	this->data_ = this->escapeString( this->data_ );
+
+	// Handle Special Cases first
+	if( this->fieldName_ == "LAT" || this->fieldName_ == "LONG" ) {
+		this->data_ = "0.0";
+
+		return( 0 );
+	}
 
 	if( this->fieldType_ == PD::DATE ) {
 		if( this->data_.length() != 6 || this->isZeros( this->data_ ) == true ) {
@@ -267,18 +298,11 @@ int parseDirective::parse( const std::string & line ) {
 		this->data_ = YY + "-" + MM + "-" + DD;
 	}
 
-	if( this->fieldType_ == PD::CHAR && this->fieldName_ == "BUILDING_DESCRIPTION" ) {
-		if( this->data_.length() == 0 ) {
-			return( 0 );
-		}
-
-		generateBuildingDescription( this->data_ );
-	}
-
 	return( 0 );
 }
 
 
+// Add escape characters to the SQL depending on the database connecting with
 std::string parseDirective::escapeString( std::string &str ) {
 	std::string ttmp;
 
@@ -300,6 +324,7 @@ std::string parseDirective::escapeString( std::string &str ) {
 }
 
 
+// remove spaces from the left side
 std::string &parseDirective::ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
         return s;
@@ -340,6 +365,10 @@ PD::FieldType parseDirective::determineType( const std::string & field ) {
 		}
 
 		return PD::MONEY;
+	}
+
+	if( field.find( "LAT" ) != std::string::npos || field.find( "LONG" ) != std::string::npos ) {
+		return PD::FLOAT;
 	}
 
 	return PD::CHAR;
